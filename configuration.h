@@ -97,8 +97,7 @@ enum settings_glob_flags
 
 enum cloud_sync_mode
 {
-   CLOUD_SYNC_OFF = 0,
-   CLOUD_SYNC_MANUAL,
+   CLOUD_SYNC_MANUAL = 0,
    CLOUD_SYNC_AUTOMATIC,
    CLOUD_SYNC_LAST
 };

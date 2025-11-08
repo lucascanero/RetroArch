@@ -6687,10 +6687,9 @@ static size_t setting_get_string_representation_uint_analog_dpad_mode(
 static size_t setting_get_string_representation_uint_cloud_sync_mode(
       rarch_setting_t *setting, char *s, size_t len)
 {
-   const char *modes[3];
-   modes[0] = msg_hash_to_str(MENU_ENUM_LABEL_VALUE_OFF);
-   modes[1] = msg_hash_to_str(MENU_ENUM_LABEL_VALUE_MANUAL);
-   modes[2] = msg_hash_to_str(MENU_ENUM_LABEL_VALUE_AUTOMATIC);
+   const char *modes[2];
+   modes[0] = msg_hash_to_str(MENU_ENUM_LABEL_VALUE_MANUAL);
+   modes[1] = msg_hash_to_str(MENU_ENUM_LABEL_VALUE_AUTOMATIC);
    return strlcpy(s, modes[*setting->value.target.unsigned_integer
          % CLOUD_SYNC_LAST], len);
 }

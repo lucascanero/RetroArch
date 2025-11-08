@@ -3982,9 +3982,9 @@ static bool config_load_file(global_t *global,
       if (config_get_bool(conf, "cloud_sync_startup_sync", &tmp))
       {
          /* Old setting found - convert to new enum:
-          * If it was true (1), use CLOUD_SYNC_AUTOMATIC (2)
-          * If it was false (0), use CLOUD_SYNC_OFF (0) */
-         settings->uints.cloud_sync_mode = tmp ? CLOUD_SYNC_AUTOMATIC : CLOUD_SYNC_OFF;
+          * If it was true (1), use CLOUD_SYNC_AUTOMATIC (1)
+          * If it was false (0), use CLOUD_SYNC_MANUAL (0) */
+         settings->uints.cloud_sync_mode = tmp ? CLOUD_SYNC_AUTOMATIC : CLOUD_SYNC_MANUAL;
       }
    }
 
