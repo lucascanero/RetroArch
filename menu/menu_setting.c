@@ -11834,8 +11834,7 @@ static bool setting_append_list(
                &subgroup_info,
                parent_group,
                general_write_handler,
-               general_read_handler,
-               SD_FLAG_NONE);
+               general_read_handler);
          (*list)[list_info->index - 1].get_string_representation = 
             &setting_get_string_representation_uint_cloud_sync_mode;
          menu_settings_list_current_add_range(list, list_info, CLOUD_SYNC_MODE_MANUAL, CLOUD_SYNC_MODE_AUTOMATIC, 1.0, true, true);
