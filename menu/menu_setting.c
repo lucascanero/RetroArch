@@ -11829,6 +11829,8 @@ static bool setting_append_list(
          (*list)[list_info->index - 1].get_string_representation =
             &setting_get_string_representation_uint_cloud_sync_mode;
          menu_settings_list_current_add_range(list, list_info, 0, CLOUD_SYNC_LAST-1, 1.0, true, true);
+         MENU_SETTINGS_LIST_CURRENT_ADD_ENUM_IDX_PTR(list, list_info, MENU_ENUM_LABEL_CLOUD_SYNC_MODE);
+         MENU_SETTINGS_LIST_CURRENT_ADD_ENUM_VALUE_IDX(list, list_info, MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_MODE);
 
          CONFIG_STRING_OPTIONS(
                list, list_info,
