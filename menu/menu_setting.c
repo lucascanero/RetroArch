@@ -6694,6 +6694,55 @@ static size_t setting_get_string_representation_uint_cloud_sync_mode(
          % CLOUD_SYNC_LAST], len);
 }
 
+static int setting_action_left_cloud_sync_mode(
+      rarch_setting_t *setting, size_t idx, bool wraparound)
+{
+   settings_t *settings = config_get_ptr();
+   unsigned int *value  = setting->value.target.unsigned_integer;
+
+   if (*value == 0)
+   {
+      if (wraparound && settings->bools.menu_navigation_wraparound_enable)
+         *value = CLOUD_SYNC_LAST - 1;
+   }
+   else
+      *value = *value - 1;
+
+   configuration_set_uint(settings, settings->uints.cloud_sync_mode, *value);
+   return 0;
+}
+
+static int setting_action_right_cloud_sync_mode(
+      rarch_setting_t *setting, size_t idx, bool wraparound)
+{
+   settings_t *settings = config_get_ptr();
+   unsigned int *value  = setting->value.target.unsigned_integer;
+
+   *value = *value + 1;
+   if (*value >= CLOUD_SYNC_LAST)
+   {
+      if (wraparound && settings->bools.menu_navigation_wraparound_enable)
+         *value = 0;
+      else
+         *value = CLOUD_SYNC_LAST - 1;
+   }
+
+   configuration_set_uint(settings, settings->uints.cloud_sync_mode, *value);
+   return 0;
+}
+
+static int setting_action_start_cloud_sync_mode(rarch_setting_t *setting)
+{
+   settings_t *settings = config_get_ptr();
+   
+   if (!setting)
+      return -1;
+
+   configuration_set_uint(settings, settings->uints.cloud_sync_mode, 
+         setting->default_value.unsigned_integer);
+   return 0;
+}
+
 static size_t setting_get_string_representation_uint_input_remap_port(
       rarch_setting_t *setting, char *s, size_t len)
 {
@@ -11825,6 +11874,9 @@ static bool setting_append_list(
                parent_group,
                general_write_handler,
                general_read_handler);
+         (*list)[list_info->index - 1].action_left   = &setting_action_left_cloud_sync_mode;
+         (*list)[list_info->index - 1].action_right  = &setting_action_right_cloud_sync_mode;
+         (*list)[list_info->index - 1].action_start  = &setting_action_start_cloud_sync_mode;
          (*list)[list_info->index - 1].action_ok     = &setting_action_ok_uint;
          (*list)[list_info->index - 1].get_string_representation =
             &setting_get_string_representation_uint_cloud_sync_mode;
