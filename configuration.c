@@ -3976,6 +3976,18 @@ static bool config_load_file(global_t *global,
          *uint_settings[i].ptr = tmp;
    }
 
+   /* Migrate old cloud_sync_startup_sync boolean to new cloud_sync_mode enum */
+   {
+      bool tmp = false;
+      if (config_get_bool(conf, "cloud_sync_startup_sync", &tmp))
+      {
+         /* Old setting found - convert to new enum:
+          * If it was true (1), use CLOUD_SYNC_AUTOMATIC (2)
+          * If it was false (0), use CLOUD_SYNC_OFF (0) */
+         settings->uints.cloud_sync_mode = tmp ? CLOUD_SYNC_AUTOMATIC : CLOUD_SYNC_OFF;
+      }
+   }
+
    for (i = 0; i < (unsigned)size_settings_size; i++)
    {
       size_t tmp = 0;
