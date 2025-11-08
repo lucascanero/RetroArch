@@ -1823,7 +1823,6 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("cloud_sync_sync_configs",       &settings->bools.cloud_sync_sync_configs, true, true, false);
    SETTING_BOOL("cloud_sync_sync_thumbs",        &settings->bools.cloud_sync_sync_thumbs, true, false, false);
    SETTING_BOOL("cloud_sync_sync_system",        &settings->bools.cloud_sync_sync_system, true, false, false);
-   SETTING_UINT("cloud_sync_mode",               &settings->uints.cloud_sync_mode, true, CLOUD_SYNC_AUTOMATIC, false);
    SETTING_BOOL("discord_allow",                 &settings->bools.discord_enable, true, false, false);
 #ifdef HAVE_MIST
    SETTING_BOOL("steam_rich_presence_enable",    &settings->bools.steam_rich_presence_enable, true, false, false);
@@ -2398,6 +2397,7 @@ static struct config_uint_setting *populate_settings_uint(
    if (!tmp)
       return NULL;
 
+   SETTING_UINT("cloud_sync_mode",               &settings->uints.cloud_sync_mode, true, CLOUD_SYNC_AUTOMATIC, false);
    SETTING_UINT("frontend_log_level",            &settings->uints.frontend_log_level, true, DEFAULT_FRONTEND_LOG_LEVEL, false);
    SETTING_UINT("libretro_log_level",            &settings->uints.libretro_log_level, true, DEFAULT_LIBRETRO_LOG_LEVEL, false);
    SETTING_UINT("fps_update_interval",           &settings->uints.fps_update_interval, true, DEFAULT_FPS_UPDATE_INTERVAL, false);
