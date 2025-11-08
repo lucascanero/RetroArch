@@ -4971,6 +4971,12 @@ MSG_HASH(
    MENU_ENUM_LABEL_ENABLED,  "enabled"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_MANUAL, "manual"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_AUTOMATIC, "automatic"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_SECONDS,  "seconds"
    )
 MSG_HASH(

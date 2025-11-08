@@ -11385,6 +11385,14 @@ MSG_HASH(
    "Disabled"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_MANUAL,
+   "Manual"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_AUTOMATIC,
+   "Automatic"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_NOT_AVAILABLE,
    "N/A"
    )
