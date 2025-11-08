@@ -4135,6 +4135,12 @@ void runloop_event_deinit_core(void)
 
    driver_uninit(DRIVERS_CMD_ALL, (enum driver_lifetime_flags)0);
 
+#ifdef HAVE_CLOUDSYNC
+   /* Trigger cloud sync on core unload if in automatic mode */
+   if (settings->uints.cloud_sync_mode == CLOUD_SYNC_MODE_AUTOMATIC)
+      task_push_cloud_sync();
+#endif
+
 #ifdef HAVE_CONFIGFILE
    if (runloop_st->flags & RUNLOOP_FLAG_OVERRIDES_ACTIVE)
    {

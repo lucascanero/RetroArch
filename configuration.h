@@ -89,6 +89,13 @@ enum override_type
    OVERRIDE_GAME
 };
 
+enum cloud_sync_mode_type
+{
+   CLOUD_SYNC_MODE_MANUAL = 0,
+   CLOUD_SYNC_MODE_AUTOMATIC,
+   CLOUD_SYNC_MODE_LAST
+};
+
 enum settings_glob_flags
 {
    SETTINGS_FLG_MODIFIED              = (1 << 0),
@@ -385,6 +392,10 @@ typedef struct settings
 
       unsigned cheevos_appearance_anchor;
       unsigned cheevos_visibility_summary;
+
+#ifdef HAVE_CLOUDSYNC
+      unsigned cloud_sync_mode;
+#endif
    } uints;
 
    struct
@@ -1000,7 +1011,6 @@ typedef struct settings
       bool cloud_sync_sync_configs;
       bool cloud_sync_sync_thumbs;
       bool cloud_sync_sync_system;
-      bool cloud_sync_startup_sync;
 
       /* Misc. */
       bool discord_enable;

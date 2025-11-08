@@ -6044,7 +6044,7 @@ int rarch_main(int argc, char *argv[], void *data)
          settings->bools.ui_companion_start_on_boot
          );
 #ifdef HAVE_CLOUDSYNC
-   if (settings->bools.cloud_sync_startup_sync)
+   if (settings->uints.cloud_sync_mode == CLOUD_SYNC_MODE_AUTOMATIC)
       task_push_cloud_sync();
 #endif
 #if !defined(HAVE_MAIN) || defined(HAVE_QT)
