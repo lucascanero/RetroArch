@@ -1353,12 +1353,12 @@ MSG_HASH(
    "When disabled, files are moved to a backup folder before being overwritten or deleted."
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_STARTUP_SYNC,
-   "Sync on startup"
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_MODE,
+   "Cloud Sync Behavior"
    )
 MSG_HASH(
-   MENU_ENUM_SUBLABEL_CLOUD_SYNC_STARTUP_SYNC,
-   "When enabled, automatically sync with cloud storage when RetroArch starts."
+   MENU_ENUM_SUBLABEL_CLOUD_SYNC_MODE,
+   "Controls when cloud synchronization occurs. Off: Never sync. Manual: Only sync when 'Sync Now' is pressed. Automatic: Sync on startup and when unloading a core."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_DRIVER,

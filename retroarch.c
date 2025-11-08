@@ -3727,6 +3727,10 @@ bool command_event(enum event_command cmd, void *data)
             menu_driver_ctl(MENU_NAVIGATION_CTL_CLEAR, &pending_push);
          }
 #endif
+#ifdef HAVE_CLOUDSYNC
+         if (settings->uints.cloud_sync_mode == CLOUD_SYNC_AUTOMATIC)
+            task_push_cloud_sync();
+#endif
          break;
       case CMD_EVENT_CLOSE_CONTENT:
 #ifdef HAVE_MENU
@@ -6044,7 +6048,7 @@ int rarch_main(int argc, char *argv[], void *data)
          settings->bools.ui_companion_start_on_boot
          );
 #ifdef HAVE_CLOUDSYNC
-   if (settings->bools.cloud_sync_startup_sync)
+   if (settings->uints.cloud_sync_mode == CLOUD_SYNC_AUTOMATIC)
       task_push_cloud_sync();
 #endif
 #if !defined(HAVE_MAIN) || defined(HAVE_QT)

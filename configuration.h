@@ -95,6 +95,14 @@ enum settings_glob_flags
    SETTINGS_FLG_SKIP_WINDOW_POSITIONS = (1 << 1)
 };
 
+enum cloud_sync_mode
+{
+   CLOUD_SYNC_OFF = 0,
+   CLOUD_SYNC_MANUAL,
+   CLOUD_SYNC_AUTOMATIC,
+   CLOUD_SYNC_LAST
+};
+
 typedef struct settings
 {
    struct
@@ -385,6 +393,8 @@ typedef struct settings
 
       unsigned cheevos_appearance_anchor;
       unsigned cheevos_visibility_summary;
+
+      unsigned cloud_sync_mode;
    } uints;
 
    struct
@@ -1000,7 +1010,6 @@ typedef struct settings
       bool cloud_sync_sync_configs;
       bool cloud_sync_sync_thumbs;
       bool cloud_sync_sync_system;
-      bool cloud_sync_startup_sync;
 
       /* Misc. */
       bool discord_enable;

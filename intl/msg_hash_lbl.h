@@ -3711,8 +3711,8 @@ MSG_HASH(
    "cloud_sync_sync_system"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_CLOUD_SYNC_STARTUP_SYNC,
-   "cloud_sync_startup_sync"
+   MENU_ENUM_LABEL_CLOUD_SYNC_MODE,
+   "cloud_sync_mode"
    )
 MSG_HASH(
    MENU_ENUM_LABEL_CLOUD_SYNC_DRIVER,
