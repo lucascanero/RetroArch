@@ -1358,7 +1358,7 @@ MSG_HASH(
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CLOUD_SYNC_MODE,
-   "Controls when cloud synchronization occurs. Manual: Only sync when 'Sync Now' is pressed. Automatic: Sync on startup and when unloading a core."
+   "Manual = Only sync files with 'Sync Now' button, Automatic = Sync every startup and core unload."
    )
 MSG_HASH(
    MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_DRIVER,
