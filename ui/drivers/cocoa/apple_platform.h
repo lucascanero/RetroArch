@@ -26,6 +26,7 @@ extern void ios_keyboard_end(void);
 
 #if TARGET_OS_OSX
 extern void osx_show_file_sheet(void);
+extern void osx_show_folder_sheet(void);
 #endif
 
 #ifdef __OBJC__
@@ -71,6 +72,7 @@ typedef enum apple_view_type
 - (bool)setDisableDisplaySleep:(bool)disable;
 #if !defined(HAVE_COCOATOUCH)
 - (void)openDocument:(id)sender;
+- (void)openFolder:(id)sender;
 #endif
 @end
 

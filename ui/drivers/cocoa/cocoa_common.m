@@ -820,6 +820,11 @@ void osx_show_file_sheet(void)
 {
    [apple_platform openDocument:nil];
 }
+
+void osx_show_folder_sheet(void)
+{
+   [apple_platform openFolder:nil];
+}
 #endif
 
 void *cocoa_screen_get_chosen(void)
