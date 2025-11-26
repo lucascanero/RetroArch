@@ -1026,6 +1026,35 @@ static void open_document_handler(
    }
 }
 
+- (void)openFolder:(id)sender
+{
+   NSOpenPanel *panel     = [NSOpenPanel openPanel];
+   settings_t *settings   = config_get_ptr();
+   const char *path_dir_menu_content = settings->paths.directory_menu_content;
+   NSString *startdir     = BOXSTRING(path_dir_menu_content);
+
+   if (!startdir.length)
+      startdir            = BOXSTRING("/");
+
+   panel.title                           = NSLocalizedString(
+         BOXSTRING(msg_hash_to_str(MENU_ENUM_LABEL_VALUE_SCAN_DIRECTORY)),
+         BOXSTRING("open panel"));
+   panel.directoryURL                    = [NSURL fileURLWithPath:startdir];
+   panel.canChooseDirectories            = YES;
+   panel.canChooseFiles                  = NO;
+   panel.allowsMultipleSelection         = NO;
+   panel.treatsFilePackagesAsDirectories = YES;
+
+   if ([panel runModal] == 1)
+   {
+      NSURL *url              = (NSURL*)panel.URL;
+      const char *folder_path = [url.path UTF8String];
+
+      if (folder_path && strlen(folder_path) > 0)
+         action_scan_directory(folder_path, NULL, 0, 0);
+   }
+}
+
 - (void)unloadingCore { }
 - (IBAction)showPreferences:(id)sender { }
 

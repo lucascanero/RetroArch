@@ -6695,7 +6695,10 @@ static int action_ok_open_picker(const char *path,
    ios_show_file_sheet();
    return 0;
 #elif defined(OSX) && defined(HAVE_APPLE_STORE)
-   osx_show_file_sheet();
+   if (filebrowser_get_type() == FILEBROWSER_SCAN_DIR)
+      osx_show_folder_sheet();
+   else
+      osx_show_file_sheet();
    return 0;
 #elif defined(ANDROID) && defined(HAVE_SAF)
    android_show_saf_tree_picker();
