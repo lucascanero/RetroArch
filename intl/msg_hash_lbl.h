@@ -3723,6 +3723,14 @@ MSG_HASH(
    "cloud_sync_sync_system"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_CLOUD_SYNC_SYNC_PLAYLISTS,
+   "cloud_sync_sync_playlists"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_CLOUD_SYNC_SYNC_ROMS,
+   "cloud_sync_sync_roms"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_CLOUD_SYNC_DRIVER,
    "cloud_sync_driver"
    )
