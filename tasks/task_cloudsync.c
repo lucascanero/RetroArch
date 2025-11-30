@@ -407,18 +407,24 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
    settings_t *settings              = config_get_ptr();
    char playlist_dir[DIR_MAX_LENGTH];
    playlist_config_t playlist_config;
+   size_t roms_added                 = 0;
 
    strlcpy(playlist_dir, settings->paths.directory_playlist, sizeof(playlist_dir));
    fill_pathname_slash(playlist_dir, sizeof(playlist_dir));
+
+   RARCH_LOG(CSPFX "Looking for playlists in: %s\n", playlist_dir);
 
    /* Get list of playlist files */
    playlist_list = dir_list_new(playlist_dir, "lpl", false, true, false, false);
    if (!playlist_list || playlist_list->size == 0)
    {
+      RARCH_LOG(CSPFX "No playlist files found in directory.\n");
       if (playlist_list)
          string_list_free(playlist_list);
       return;
    }
+
+   RARCH_LOG(CSPFX "Found %zu playlist files.\n", playlist_list->size);
 
    /* Initialize playlist config */
    playlist_config.capacity                = 0;
@@ -446,6 +452,7 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
       }
 
       pl_size = playlist_size(playlist);
+      RARCH_LOG(CSPFX "Playlist %s has %zu entries.\n", playlist_path, pl_size);
 
       for (j = 0; j < pl_size; j++)
       {
@@ -461,7 +468,10 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
 
          /* Check if file exists */
          if (!path_is_valid(entry->path))
+         {
+            RARCH_DBG(CSPFX "ROM path not valid or file not found: %s\n", entry->path);
             continue;
+         }
 
          /* Create the alt path as "roms/<parent_dir_hash>/<filename>" to avoid collisions
           * when ROMs with the same filename exist in different directories */
@@ -503,13 +513,15 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
          idx = manifest->size;
          file_list_append(manifest, entry->path, NULL, 0, 0, 0);
          file_list_set_alt_at_offset(manifest, idx, alt);
+         roms_added++;
+         RARCH_LOG(CSPFX "Added ROM to manifest: %s -> %s\n", entry->path, alt);
       }
 
       playlist_free(playlist);
    }
 
    string_list_free(playlist_list);
-   RARCH_LOG(CSPFX "Added ROMs from playlists to manifest.\n");
+   RARCH_LOG(CSPFX "Added %zu ROMs from playlists to manifest.\n", roms_added);
 }
 
 /**
