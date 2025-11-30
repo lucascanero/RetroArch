@@ -586,7 +586,6 @@ typedef struct settings
       char directory_thumbnails[DIR_MAX_LENGTH];
       char directory_menu_config[DIR_MAX_LENGTH];
       char directory_menu_content[DIR_MAX_LENGTH];
-      char directory_cloud_sync_roms[DIR_MAX_LENGTH];
 #ifdef _3DS
       char directory_bottom_assets[DIR_MAX_LENGTH];
 #endif

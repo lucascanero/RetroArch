@@ -1341,14 +1341,6 @@ MSG_HASH(
    "Sync: ROMs"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ROMS_DIRECTORY,
-   "Cloud Sync ROMs Directory"
-   )
-MSG_HASH(
-   MENU_ENUM_SUBLABEL_CLOUD_SYNC_ROMS_DIRECTORY,
-   "Directory where ROMs will be downloaded when syncing from cloud."
-   )
-MSG_HASH(
    MENU_ENUM_SUBLABEL_CLOUD_SYNC_SYNC_SAVES,
    "When enabled, saves/states will be synced to cloud."
    )

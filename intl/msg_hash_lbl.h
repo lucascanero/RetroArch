@@ -3731,10 +3731,6 @@ MSG_HASH(
    "cloud_sync_sync_roms"
    )
 MSG_HASH(
-   MENU_ENUM_LABEL_CLOUD_SYNC_ROMS_DIRECTORY,
-   "cloud_sync_roms_directory"
-   )
-MSG_HASH(
    MENU_ENUM_LABEL_CLOUD_SYNC_DRIVER,
    "cloud_sync_driver"
    )

@@ -1660,7 +1660,6 @@ static struct config_path_setting *populate_settings_path(
    SETTING_PATH("thumbnails_directory",          settings->paths.directory_thumbnails, true, NULL, true);
    SETTING_PATH("runtime_log_directory",         settings->paths.directory_runtime_log, true, NULL, true);
    SETTING_PATH("joypad_autoconfig_dir",         settings->paths.directory_autoconfig, false, NULL, true);
-   SETTING_PATH("cloud_sync_roms_directory",     settings->paths.directory_cloud_sync_roms, true, NULL, true);
    SETTING_PATH("savefile_directory",            dir_get_ptr(RARCH_DIR_SAVEFILE), true, NULL, false);
    SETTING_PATH("savestate_directory",           dir_get_ptr(RARCH_DIR_SAVESTATE), true, NULL, false);
    SETTING_PATH("screenshot_directory",          settings->paths.directory_screenshot, true, NULL, true);
@@ -3125,7 +3124,6 @@ void config_set_defaults(void *data)
    *settings->paths.directory_content_video_history = '\0';
    *settings->paths.directory_runtime_log = '\0';
    *settings->paths.directory_autoconfig = '\0';
-   *settings->paths.directory_cloud_sync_roms = '\0';
 #ifdef HAVE_MENU
    *settings->paths.directory_menu_content = '\0';
    *settings->paths.directory_menu_config = '\0';
