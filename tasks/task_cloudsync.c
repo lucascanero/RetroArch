@@ -387,7 +387,15 @@ static struct string_list *task_cloud_sync_directory_map(void)
          strlcpy(dir, settings->paths.directory_playlist, sizeof(dir));
          list->elems[list->size - 1].userdata = strdup(dir);
       }
-      /* ROMs sync is handled separately via playlist parsing */
+
+      /* Add roms directory mapping for downloads if directory is configured */
+      if (settings->bools.cloud_sync_sync_roms &&
+          !string_is_empty(settings->paths.directory_cloud_sync_roms))
+      {
+         string_list_append(list, "roms", attr);
+         strlcpy(dir, settings->paths.directory_cloud_sync_roms, sizeof(dir));
+         list->elems[list->size - 1].userdata = strdup(dir);
+      }
    }
 
    return list;

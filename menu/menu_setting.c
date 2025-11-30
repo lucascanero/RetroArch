@@ -11858,6 +11858,21 @@ static bool setting_append_list(
                general_read_handler,
                SD_FLAG_NONE);
 
+         CONFIG_DIR(
+               list, list_info,
+               settings->paths.directory_cloud_sync_roms,
+               sizeof(settings->paths.directory_cloud_sync_roms),
+               MENU_ENUM_LABEL_CLOUD_SYNC_ROMS_DIRECTORY,
+               MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ROMS_DIRECTORY,
+               "",
+               MENU_ENUM_LABEL_VALUE_DIRECTORY_DEFAULT,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler);
+         (*list)[list_info->index - 1].action_start = directory_action_start_generic;
+
          CONFIG_UINT(
                list, list_info,
                &settings->uints.cloud_sync_sync_mode,
