@@ -16023,6 +16023,10 @@ MSG_HASH(
    "Scanning content: "
    )
 MSG_HASH(
+   MSG_MANUAL_CONTENT_SCAN_BUILDING_LIST,
+   "Building content list..."
+   )
+MSG_HASH(
    MSG_MANUAL_CONTENT_SCAN_PLAYLIST_CLEANUP,
    "Checking current entries: "
    )

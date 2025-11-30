@@ -44,6 +44,7 @@
 enum manual_scan_status
 {
    MANUAL_SCAN_BEGIN = 0,
+   MANUAL_SCAN_BUILD_LIST,
    MANUAL_SCAN_ITERATE_CLEAN,
    MANUAL_SCAN_ITERATE_CONTENT,
    MANUAL_SCAN_ITERATE_M3U,
@@ -206,12 +207,29 @@ static void task_manual_content_scan_handler(retro_task_t *task)
    {
       case MANUAL_SCAN_BEGIN:
          {
+            /* Update progress display to indicate content discovery is starting
+             * > This ensures the UI updates before the potentially blocking
+             *   directory scan operation */
+            task_free_title(task);
+            task_set_title(task, strdup(
+                  msg_hash_to_str(MSG_MANUAL_CONTENT_SCAN_BUILDING_LIST)));
+            task_set_progress(task, 0);
+
             /* Get allowed file extensions list */
             if (!string_is_empty(manual_scan->task_config->file_exts))
                manual_scan->file_exts_list = string_split(
                      manual_scan->task_config->file_exts, "|");
 
-            /* Get content list */
+            /* Move to the next phase which will do the actual content list building */
+            manual_scan->status = MANUAL_SCAN_BUILD_LIST;
+         }
+         break;
+      case MANUAL_SCAN_BUILD_LIST:
+         {
+            /* Get content list
+             * > This can be a slow operation for directories with
+             *   many files, especially on platforms with slower
+             *   file systems (e.g. Nintendo Switch) */
             if (!(manual_scan->content_list
                      = manual_content_scan_get_content_list(
                         manual_scan->task_config)))
