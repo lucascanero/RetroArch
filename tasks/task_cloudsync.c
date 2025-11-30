@@ -379,6 +379,20 @@ static struct string_list *task_cloud_sync_directory_map(void)
          strlcpy(dir, settings->paths.directory_system, sizeof(dir));
          list->elems[list->size - 1].userdata = strdup(dir);
       }
+
+      if (settings->bools.cloud_sync_sync_playlists)
+      {
+         string_list_append(list, "playlists", attr);
+         strlcpy(dir, settings->paths.directory_playlist, sizeof(dir));
+         list->elems[list->size - 1].userdata = strdup(dir);
+      }
+
+      if (settings->bools.cloud_sync_sync_roms)
+      {
+         string_list_append(list, "roms", attr);
+         strlcpy(dir, settings->paths.directory_menu_content, sizeof(dir));
+         list->elems[list->size - 1].userdata = strdup(dir);
+      }
    }
 
    return list;

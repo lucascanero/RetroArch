@@ -11828,6 +11828,36 @@ static bool setting_append_list(
                general_read_handler,
                SD_FLAG_NONE);
 
+         CONFIG_BOOL(
+               list, list_info,
+               &settings->bools.cloud_sync_sync_playlists,
+               MENU_ENUM_LABEL_CLOUD_SYNC_SYNC_PLAYLISTS,
+               MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_SYNC_PLAYLISTS,
+               false,
+               MENU_ENUM_LABEL_VALUE_OFF,
+               MENU_ENUM_LABEL_VALUE_ON,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler,
+               SD_FLAG_NONE);
+
+         CONFIG_BOOL(
+               list, list_info,
+               &settings->bools.cloud_sync_sync_roms,
+               MENU_ENUM_LABEL_CLOUD_SYNC_SYNC_ROMS,
+               MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_SYNC_ROMS,
+               false,
+               MENU_ENUM_LABEL_VALUE_OFF,
+               MENU_ENUM_LABEL_VALUE_ON,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler,
+               SD_FLAG_NONE);
+
          CONFIG_UINT(
                list, list_info,
                &settings->uints.cloud_sync_sync_mode,

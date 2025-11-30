@@ -1823,6 +1823,8 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("cloud_sync_sync_configs",       &settings->bools.cloud_sync_sync_configs, true, true, false);
    SETTING_BOOL("cloud_sync_sync_thumbs",        &settings->bools.cloud_sync_sync_thumbs, true, false, false);
    SETTING_BOOL("cloud_sync_sync_system",        &settings->bools.cloud_sync_sync_system, true, false, false);
+   SETTING_BOOL("cloud_sync_sync_playlists",     &settings->bools.cloud_sync_sync_playlists, true, false, false);
+   SETTING_BOOL("cloud_sync_sync_roms",          &settings->bools.cloud_sync_sync_roms, true, false, false);
    SETTING_BOOL("discord_allow",                 &settings->bools.discord_enable, true, false, false);
 #ifdef HAVE_MIST
    SETTING_BOOL("steam_rich_presence_enable",    &settings->bools.steam_rich_presence_enable, true, false, false);

@@ -1333,6 +1333,14 @@ MSG_HASH(
    "Sync: System Files"
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_SYNC_PLAYLISTS,
+   "Sync: Playlists"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_SYNC_ROMS,
+   "Sync: ROMs"
+   )
+MSG_HASH(
    MENU_ENUM_SUBLABEL_CLOUD_SYNC_SYNC_SAVES,
    "When enabled, saves/states will be synced to cloud."
    )
@@ -1347,6 +1355,14 @@ MSG_HASH(
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CLOUD_SYNC_SYNC_SYSTEM,
    "When enabled, system files will be synced to cloud. This can significantly increase the time it takes to sync; use with caution."
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_CLOUD_SYNC_SYNC_PLAYLISTS,
+   "When enabled, playlist files will be synced to cloud."
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_CLOUD_SYNC_SYNC_ROMS,
+   "When enabled, ROM files will be synced to cloud. This can significantly increase the time it takes to sync; use with caution."
    )
 MSG_HASH(
    MENU_ENUM_SUBLABEL_CLOUD_SYNC_DESTRUCTIVE,
