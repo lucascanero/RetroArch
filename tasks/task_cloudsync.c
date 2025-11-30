@@ -440,7 +440,10 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
 
       playlist = playlist_init(&playlist_config);
       if (!playlist)
+      {
+         RARCH_WARN(CSPFX "Failed to load playlist: %s\n", playlist_path);
          continue;
+      }
 
       pl_size = playlist_size(playlist);
 
@@ -460,10 +463,25 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
          if (!path_is_valid(entry->path))
             continue;
 
-         /* Create the alt path as "roms/<filename>" */
-         fill_pathname_base(rom_filename, entry->path, sizeof(rom_filename));
-         fill_pathname_join_special(alt, "roms", rom_filename, sizeof(alt));
-         pathname_make_slashes_portable(alt);
+         /* Create the alt path as "roms/<parent_dir_hash>/<filename>" to avoid collisions
+          * when ROMs with the same filename exist in different directories */
+         {
+            char parent_dir[DIR_MAX_LENGTH];
+            char parent_hash[16];
+            uint32_t hash;
+
+            fill_pathname_base(rom_filename, entry->path, sizeof(rom_filename));
+            fill_pathname_parent_dir(parent_dir, entry->path, sizeof(parent_dir));
+            
+            /* Generate a short hash of the parent directory path */
+            hash = djb2_calculate(parent_dir);
+            snprintf(parent_hash, sizeof(parent_hash), "%08x", hash);
+            
+            /* Build path as "roms/<hash>/<filename>" */
+            fill_pathname_join_special(alt, "roms", parent_hash, sizeof(alt));
+            fill_pathname_join_special(alt, alt, rom_filename, sizeof(alt));
+            pathname_make_slashes_portable(alt);
+         }
 
          /* Check for duplicates (same ROM may be in multiple playlists) */
          {
