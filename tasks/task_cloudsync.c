@@ -28,6 +28,7 @@
 #include "../file_path_special.h"
 #include "../network/cloud_sync_driver.h"
 #include "../paths.h"
+#include "../playlist.h"
 #include "../tasks/tasks_internal.h"
 #include "../verbosity.h"
 
@@ -386,16 +387,111 @@ static struct string_list *task_cloud_sync_directory_map(void)
          strlcpy(dir, settings->paths.directory_playlist, sizeof(dir));
          list->elems[list->size - 1].userdata = strdup(dir);
       }
-
-      if (settings->bools.cloud_sync_sync_roms)
-      {
-         string_list_append(list, "roms", attr);
-         strlcpy(dir, settings->paths.directory_menu_content, sizeof(dir));
-         list->elems[list->size - 1].userdata = strdup(dir);
-      }
+      /* ROMs sync is handled separately via playlist parsing */
    }
 
    return list;
+}
+
+/**
+ * task_cloud_sync_manifest_append_roms_from_playlists:
+ * @manifest         : pointer to the current file_list
+ *
+ * Reads all playlist files and adds the ROM paths from each playlist entry
+ * to the manifest for cloud synchronization.
+ */
+static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *manifest)
+{
+   size_t i, j;
+   struct string_list *playlist_list;
+   settings_t *settings              = config_get_ptr();
+   char playlist_dir[DIR_MAX_LENGTH];
+   playlist_config_t playlist_config;
+
+   strlcpy(playlist_dir, settings->paths.directory_playlist, sizeof(playlist_dir));
+   fill_pathname_slash(playlist_dir, sizeof(playlist_dir));
+
+   /* Get list of playlist files */
+   playlist_list = dir_list_new(playlist_dir, "lpl", false, true, false, false);
+   if (!playlist_list || playlist_list->size == 0)
+   {
+      if (playlist_list)
+         string_list_free(playlist_list);
+      return;
+   }
+
+   /* Initialize playlist config */
+   playlist_config.capacity                = 0;
+   playlist_config.old_format              = false;
+   playlist_config.compress                = false;
+   playlist_config.fuzzy_archive_match     = false;
+   playlist_config.autofix_paths           = false;
+   playlist_config_set_path(&playlist_config, "");
+   playlist_config_set_base_content_directory(&playlist_config, "");
+
+   for (i = 0; i < playlist_list->size; i++)
+   {
+      const char *playlist_path = playlist_list->elems[i].data;
+      playlist_t *playlist;
+      size_t pl_size;
+
+      /* Update config with current playlist path */
+      playlist_config_set_path(&playlist_config, playlist_path);
+
+      playlist = playlist_init(&playlist_config);
+      if (!playlist)
+         continue;
+
+      pl_size = playlist_size(playlist);
+
+      for (j = 0; j < pl_size; j++)
+      {
+         const struct playlist_entry *entry = NULL;
+         char alt[PATH_MAX_LENGTH];
+         char rom_filename[PATH_MAX_LENGTH];
+         size_t idx;
+
+         playlist_get_index(playlist, j, &entry);
+
+         if (!entry || string_is_empty(entry->path))
+            continue;
+
+         /* Check if file exists */
+         if (!path_is_valid(entry->path))
+            continue;
+
+         /* Create the alt path as "roms/<filename>" */
+         fill_pathname_base(rom_filename, entry->path, sizeof(rom_filename));
+         fill_pathname_join_special(alt, "roms", rom_filename, sizeof(alt));
+         pathname_make_slashes_portable(alt);
+
+         /* Check for duplicates (same ROM may be in multiple playlists) */
+         {
+            bool duplicate = false;
+            size_t k;
+            for (k = 0; k < manifest->size; k++)
+            {
+               const char *existing_alt = manifest->list[k].alt;
+               if (existing_alt && string_is_equal(existing_alt, alt))
+               {
+                  duplicate = true;
+                  break;
+               }
+            }
+            if (duplicate)
+               continue;
+         }
+
+         idx = manifest->size;
+         file_list_append(manifest, entry->path, NULL, 0, 0, 0);
+         file_list_set_alt_at_offset(manifest, idx, alt);
+      }
+
+      playlist_free(playlist);
+   }
+
+   string_list_free(playlist_list);
+   RARCH_LOG(CSPFX "Added ROMs from playlists to manifest.\n");
 }
 
 /**
@@ -407,6 +503,7 @@ static struct string_list *task_cloud_sync_directory_map(void)
 static void task_cloud_sync_build_current_manifest(task_cloud_sync_state_t *sync_state)
 {
    struct string_list *dirlist = task_cloud_sync_directory_map();
+   settings_t *settings        = config_get_ptr();
    size_t i;
 
    if (!(sync_state->current_manifest = (file_list_t *)calloc(1, sizeof(file_list_t))))
@@ -432,6 +529,10 @@ static void task_cloud_sync_build_current_manifest(task_cloud_sync_state_t *sync
    for (i = 0; i < dirlist->size; i++)
       task_cloud_sync_manifest_append_dir(sync_state->current_manifest,
             (const char*)dirlist->elems[i].userdata, dirlist->elems[i].data);
+
+   /* Add ROMs from playlists if ROMs sync is enabled */
+   if (settings->bools.cloud_sync_sync_roms)
+      task_cloud_sync_manifest_append_roms_from_playlists(sync_state->current_manifest);
 
    file_list_sort_on_alt(sync_state->current_manifest);
    sync_state->phase = CLOUD_SYNC_PHASE_DIFF;
