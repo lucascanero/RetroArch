@@ -15111,6 +15111,10 @@ MSG_HASH(
    "Analisando conteúdo: "
    )
 MSG_HASH(
+   MSG_MANUAL_CONTENT_SCAN_BUILDING_LIST,
+   "Construindo lista de conteúdo..."
+   )
+MSG_HASH(
    MSG_MANUAL_CONTENT_SCAN_PLAYLIST_CLEANUP,
    "Verificando as entradas atuais: "
    )
