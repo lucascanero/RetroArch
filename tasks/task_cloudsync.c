@@ -426,8 +426,8 @@ static void task_cloud_sync_manifest_append_roms_from_playlists(file_list_t *man
 
    RARCH_LOG(CSPFX "Found %zu playlist files.\n", playlist_list->size);
 
-   /* Initialize playlist config */
-   playlist_config.capacity                = 0;
+   /* Initialize playlist config with unlimited capacity to read all entries */
+   playlist_config.capacity                = COLLECTION_SIZE;
    playlist_config.old_format              = false;
    playlist_config.compress                = false;
    playlist_config.fuzzy_archive_match     = false;
