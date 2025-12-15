@@ -36,6 +36,14 @@
 #endif
 #endif
 
+#ifdef VITA
+#define unix
+#define MBEDTLS_NO_IPV6
+#ifndef _SOCKLEN_T_DECLARED
+#define _SOCKLEN_T_DECLARED
+#endif
+#endif
+
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE 1
 #endif
