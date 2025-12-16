@@ -753,8 +753,12 @@ else ifeq ($(HAVE_BUILTINMBEDTLS), 1)
                      deps/mbedtls/sha256.o \
                      deps/mbedtls/sha512.o \
                      deps/mbedtls/threading.o \
-                     deps/mbedtls/timing.o \
                      deps/mbedtls/xtea.o
+
+   # Timing module only works on Unix/Windows, exclude for Vita
+   ifneq ($(TARGET), retroarch_vita)
+      OBJS_TLS_CRYPTO += deps/mbedtls/timing.o
+   endif
 
    OBJS_TLS_X509 = deps/mbedtls/certs.o \
                    deps/mbedtls/x509.o \
