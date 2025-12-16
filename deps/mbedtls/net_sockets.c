@@ -42,8 +42,8 @@
 
 #include "mbedtls/net_sockets.h"
 
-#if defined(VITA)
-/* Include Vita network compatibility definitions */
+#if defined(VITA) || defined(__PS3__) || defined(WIIU)
+/* Include network compatibility definitions for console platforms */
 #include "../../libretro-common/include/net/net_compat.h"
 #endif
 
