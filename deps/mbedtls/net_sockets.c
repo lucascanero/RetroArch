@@ -32,7 +32,8 @@
 #if defined(MBEDTLS_NET_C)
 
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
-    !defined(__APPLE__) && !defined(_WIN32) && !defined(__HAIKU__)
+    !defined(__APPLE__) && !defined(_WIN32) && !defined(__HAIKU__) && \
+    !defined(VITA) && !defined(__PS3__) && !defined(WIIU)
 #error "This module only works on Unix and Windows, see MBEDTLS_NET_C in config.h"
 #endif
 
@@ -40,6 +41,11 @@
 #include <string.h>
 
 #include "mbedtls/net_sockets.h"
+
+#if defined(VITA)
+/* Include Vita network compatibility definitions */
+#include "../../libretro-common/include/net/net_compat.h"
+#endif
 
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && !defined(EFIX64) && \
     !defined(EFI32)
