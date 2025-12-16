@@ -64,6 +64,13 @@ void mbedtls_entropy_init( mbedtls_entropy_context *ctx )
                                 MBEDTLS_ENTROPY_MIN_HARDCLOCK,
                                 MBEDTLS_ENTROPY_SOURCE_WEAK );
 #endif
+#if defined(VITA)
+    /* PS Vita custom entropy source */
+    extern int mbedtls_vita_entropy_poll(void *, unsigned char *, size_t, size_t *);
+    mbedtls_entropy_add_source( ctx, mbedtls_vita_entropy_poll, NULL,
+                                MBEDTLS_ENTROPY_MIN_PLATFORM,
+                                MBEDTLS_ENTROPY_SOURCE_STRONG );
+#endif
 #if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
     mbedtls_entropy_add_source( ctx, mbedtls_hardware_poll, NULL,
                                 MBEDTLS_ENTROPY_MIN_HARDWARE,
