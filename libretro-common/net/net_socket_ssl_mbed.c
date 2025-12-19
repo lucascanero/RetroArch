@@ -90,6 +90,38 @@ int ctr_entropy_func(void *data, unsigned char *s, size_t len)
 }
 #endif
 
+#ifdef VITA
+#include <psp2/kernel/processmgr.h>
+int vita_entropy_func(void *data, unsigned char *s, size_t len)
+{
+   size_t i;
+   uint32_t random_val;
+   (void)data;
+   /* Use sceKernelGetRandomNumber for hardware RNG on Vita
+    * Get 4 bytes at a time for efficiency */
+   for (i = 0; i < len; i += 4)
+   {
+      random_val = sceKernelGetRandomNumber();
+      if (i + 4 <= len)
+      {
+         s[i]     = (unsigned char)(random_val & 0xFF);
+         s[i + 1] = (unsigned char)((random_val >> 8) & 0xFF);
+         s[i + 2] = (unsigned char)((random_val >> 16) & 0xFF);
+         s[i + 3] = (unsigned char)((random_val >> 24) & 0xFF);
+      }
+      else
+      {
+         /* Handle remaining bytes */
+         size_t remaining = len - i;
+         size_t j;
+         for (j = 0; j < remaining; j++)
+            s[i + j] = (unsigned char)((random_val >> (j * 8)) & 0xFF);
+      }
+   }
+   return 0;
+}
+#endif
+
 void* ssl_socket_init(int fd, const char *domain)
 {
    static const char *pers = "libretro";
@@ -113,8 +145,10 @@ void* ssl_socket_init(int fd, const char *domain)
    state->net_ctx.fd = fd;
 
    if (mbedtls_ctr_drbg_seed(&state->ctr_drbg,
-#ifdef _3DS
+#if defined(_3DS)
       ctr_entropy_func,
+#elif defined(VITA)
+      vita_entropy_func,
 #else
       mbedtls_entropy_func,
 #endif

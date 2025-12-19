@@ -87,6 +87,13 @@ static int wsa_init_done = 0;
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
+#ifdef VITA
+#include <psp2/net/net.h>
+#include <psp2/sysmodule.h>
+#define SO_TYPE SCE_NET_SO_TYPE
+#define SO_NBIO SCE_NET_SO_NBIO
+#endif
+
 /* Some MS functions want int and MSVC warns if we pass size_t,
  * but the standard fucntions use socklen_t, so cast only for MSVC */
 #if defined(_MSC_VER)
@@ -306,7 +313,8 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
     struct sockaddr_storage client_addr;
 
 #if defined(__socklen_t_defined) || defined(_SOCKLEN_T) ||  \
-    defined(_SOCKLEN_T_DECLARED) || defined(__DEFINED_socklen_t)
+    defined(_SOCKLEN_T_DECLARED) || defined(__DEFINED_socklen_t) || \
+    defined(VITA)
     socklen_t n = (socklen_t) sizeof( client_addr );
     socklen_t type_len = (socklen_t) sizeof( type );
 #else
@@ -528,17 +536,6 @@ int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
 
 #if defined(__PS3__)
     ret = socketselect(fd + 1, &read_fds, NULL, NULL, timeout == 0 ? NULL : &tv);
-#elif  defined(VITA)
-   extern int retro_epoll_fd;
-   SceNetEpollEvent ev = {0};
-
-   ev.events = SCE_NET_EPOLLIN | SCE_NET_EPOLLHUP;
-   ev.data.fd = fd + 1;
-
-   if((sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_ADD, fd + 1, &ev)))
-   {
-      int ret = sceNetEpollWait(retro_epoll_fd, &ev, 1, 0);
-      sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_DEL, fd + 1, NULL);
 #else
     ret = select( fd + 1, &read_fds, NULL, NULL, timeout == 0 ? NULL : &tv );
 #endif
