@@ -90,6 +90,19 @@ int ctr_entropy_func(void *data, unsigned char *s, size_t len)
 }
 #endif
 
+#ifdef VITA
+#include <psp2/kernel/clib.h>
+int vita_entropy_func(void *data, unsigned char *s, size_t len)
+{
+   size_t i;
+   (void)data;
+   /* Use sceKernelGetRandomNumber for hardware RNG on Vita */
+   for (i = 0; i < len; i++)
+      s[i] = (unsigned char)(sceKernelGetRandomNumber() & 0xFF);
+   return 0;
+}
+#endif
+
 void* ssl_socket_init(int fd, const char *domain)
 {
    static const char *pers = "libretro";
@@ -113,8 +126,10 @@ void* ssl_socket_init(int fd, const char *domain)
    state->net_ctx.fd = fd;
 
    if (mbedtls_ctr_drbg_seed(&state->ctr_drbg,
-#ifdef _3DS
+#if defined(_3DS)
       ctr_entropy_func,
+#elif defined(VITA)
+      vita_entropy_func,
 #else
       mbedtls_entropy_func,
 #endif
