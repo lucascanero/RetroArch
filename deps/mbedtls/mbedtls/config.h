@@ -36,6 +36,10 @@
 #endif
 #endif
 
+/* PS Vita platform configuration
+ * Define unix macro to satisfy entropy_poll.c platform checks.
+ * This follows the same pattern as 3DS above.
+ */
 #ifdef VITA
 #define unix
 #define MBEDTLS_NO_IPV6
