@@ -1612,7 +1612,7 @@
  *
  * This module is used by the HAVEGE random number generator.
  */
-#ifndef _3DS
+#if !defined(_3DS) && !defined(VITA)
 #define MBEDTLS_TIMING_C
 #endif
 

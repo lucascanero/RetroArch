@@ -536,18 +536,6 @@ int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
 
 #if defined(__PS3__)
     ret = socketselect(fd + 1, &read_fds, NULL, NULL, timeout == 0 ? NULL : &tv);
-#elif  defined(VITA)
-   extern int retro_epoll_fd;
-   SceNetEpollEvent ev = {0};
-
-   ev.events = SCE_NET_EPOLLIN | SCE_NET_EPOLLHUP;
-   ev.data.fd = fd + 1;
-
-   if((sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_ADD, fd + 1, &ev)))
-   {
-      ret = sceNetEpollWait(retro_epoll_fd, &ev, 1, 0);
-      sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_DEL, fd + 1, NULL);
-   }
 #else
     ret = select( fd + 1, &read_fds, NULL, NULL, timeout == 0 ? NULL : &tv );
 #endif
