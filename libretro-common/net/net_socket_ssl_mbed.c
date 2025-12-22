@@ -98,20 +98,38 @@ int ctr_entropy_func(void *data, unsigned char *s, size_t len)
 #ifdef VITA
 int vita_entropy_func(void *data, unsigned char *s, size_t len)
 {
-   size_t i;
+   size_t i, j;
    SceRtcTick tick;
+   SceUInt64 time_vals[4];
+   SceUInt64 state;
    (void)data;
 
-   /* Use combination of RTC tick and system time as entropy source */
+   /* Get initial entropy from RTC tick */
    sceRtcGetCurrentTick(&tick);
+   state = tick.tick;
 
+   /* Sample system time multiple times for additional entropy */
+   for (j = 0; j < 4; j++)
+      time_vals[j] = sceKernelGetSystemTimeWide();
+
+   /* Mix all time values into state using XOR and rotation */
+   for (j = 0; j < 4; j++)
+   {
+      state ^= time_vals[j];
+      state = (state << 17) | (state >> 47);
+      state ^= (state >> 31);
+   }
+
+   /* Generate output bytes using a simple PRNG seeded with the entropy */
    for (i = 0; i < len; i++)
    {
-      SceUInt64 time_val = sceKernelGetSystemTimeWide();
-      /* Mix tick and time values to generate pseudo-random bytes */
-      s[i] = (unsigned char)((tick.tick ^ time_val ^ (i * 0x9E3779B9)) >> ((i % 8) * 8));
-      tick.tick ^= (time_val << 13) | (time_val >> 51);
+      /* xorshift64* PRNG for good statistical properties */
+      state ^= state >> 12;
+      state ^= state << 25;
+      state ^= state >> 27;
+      s[i] = (unsigned char)((state * 0x2545F4914F6CDD1DULL) >> 56);
    }
+
    return 0;
 }
 #endif
