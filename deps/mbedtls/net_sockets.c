@@ -37,7 +37,8 @@
 #endif
 
 #ifdef VITA
-#include <net/net_compat.h>
+#include <psp2/net/net.h>
+#define SO_NBIO SCE_NET_SO_NBIO
 #endif
 
 #include <stdlib.h>
