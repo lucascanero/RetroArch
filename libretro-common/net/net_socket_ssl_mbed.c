@@ -30,6 +30,11 @@
 #include <3ds/services/ps.h>
 #endif
 
+#ifdef VITA
+#include <psp2/kernel/processmgr.h>
+#include <psp2/rtc.h>
+#endif
+
 #if defined(HAVE_BUILTINMBEDTLS)
 #include "../../deps/mbedtls/mbedtls/config.h"
 #include "../../deps/mbedtls/mbedtls/certs.h"
@@ -90,6 +95,27 @@ int ctr_entropy_func(void *data, unsigned char *s, size_t len)
 }
 #endif
 
+#ifdef VITA
+int vita_entropy_func(void *data, unsigned char *s, size_t len)
+{
+   size_t i;
+   SceRtcTick tick;
+   (void)data;
+
+   /* Use combination of RTC tick and system time as entropy source */
+   sceRtcGetCurrentTick(&tick);
+
+   for (i = 0; i < len; i++)
+   {
+      SceUInt64 time_val = sceKernelGetSystemTimeWide();
+      /* Mix tick and time values to generate pseudo-random bytes */
+      s[i] = (unsigned char)((tick.tick ^ time_val ^ (i * 0x9E3779B9)) >> ((i % 8) * 8));
+      tick.tick ^= (time_val << 13) | (time_val >> 51);
+   }
+   return 0;
+}
+#endif
+
 void* ssl_socket_init(int fd, const char *domain)
 {
    static const char *pers = "libretro";
@@ -115,6 +141,8 @@ void* ssl_socket_init(int fd, const char *domain)
    if (mbedtls_ctr_drbg_seed(&state->ctr_drbg,
 #ifdef _3DS
       ctr_entropy_func,
+#elif defined(VITA)
+      vita_entropy_func,
 #else
       mbedtls_entropy_func,
 #endif
