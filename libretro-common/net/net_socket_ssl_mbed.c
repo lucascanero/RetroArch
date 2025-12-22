@@ -63,7 +63,12 @@
 /* Not part of the mbedtls upstream source */
 #include "cacert.h"
 
+/* Enable SSL debug logging for VITA to help debug HTTPS issues */
+#ifdef VITA
+#define DEBUG_LEVEL 4
+#else
 #define DEBUG_LEVEL 0
+#endif
 
 struct ssl_state
 {
@@ -136,6 +141,7 @@ int vita_entropy_func(void *data, unsigned char *s, size_t len)
 
 void* ssl_socket_init(int fd, const char *domain)
 {
+   int ret;
    static const char *pers = "libretro";
    struct ssl_state *state = (struct ssl_state*)calloc(1, sizeof(*state));
 
@@ -143,6 +149,10 @@ void* ssl_socket_init(int fd, const char *domain)
 
 #if defined(MBEDTLS_DEBUG_C)
    mbedtls_debug_set_threshold(DEBUG_LEVEL);
+#endif
+
+#ifdef VITA
+   fprintf(stderr, "[SSL] ssl_socket_init: fd=%d, domain=%s\n", fd, domain ? domain : "(null)");
 #endif
 
    mbedtls_net_init(&state->net_ctx);
@@ -156,7 +166,7 @@ void* ssl_socket_init(int fd, const char *domain)
 
    state->net_ctx.fd = fd;
 
-   if (mbedtls_ctr_drbg_seed(&state->ctr_drbg,
+   ret = mbedtls_ctr_drbg_seed(&state->ctr_drbg,
 #ifdef _3DS
       ctr_entropy_func,
 #elif defined(VITA)
@@ -164,12 +174,27 @@ void* ssl_socket_init(int fd, const char *domain)
 #else
       mbedtls_entropy_func,
 #endif
-      &state->entropy, (const unsigned char*)pers, strlen(pers)) != 0)
+      &state->entropy, (const unsigned char*)pers, strlen(pers));
+   if (ret != 0)
+   {
+#ifdef VITA
+      fprintf(stderr, "[SSL] mbedtls_ctr_drbg_seed failed: -0x%04x\n", -ret);
+#endif
       goto error;
+   }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-   if (mbedtls_x509_crt_parse(&state->ca, (const unsigned char*)cacert_pem, sizeof(cacert_pem) / sizeof(cacert_pem[0])) < 0)
+   ret = mbedtls_x509_crt_parse(&state->ca, (const unsigned char*)cacert_pem, sizeof(cacert_pem) / sizeof(cacert_pem[0]));
+   if (ret < 0)
+   {
+#ifdef VITA
+      fprintf(stderr, "[SSL] mbedtls_x509_crt_parse failed: -0x%04x\n", -ret);
+#endif
       goto error;
+   }
+#ifdef VITA
+   fprintf(stderr, "[SSL] CA certificates loaded successfully\n");
+#endif
 #endif
 
    return state;
@@ -186,51 +211,108 @@ int ssl_socket_connect(void *state_data,
    int ret, flags;
    struct ssl_state *state = (struct ssl_state*)state_data;
 
+#ifdef VITA
+   fprintf(stderr, "[SSL] ssl_socket_connect: starting connection\n");
+#endif
+
    if (timeout_enable)
    {
       if (!socket_connect_with_timeout(state->net_ctx.fd, data, 5000))
+      {
+#ifdef VITA
+         fprintf(stderr, "[SSL] socket_connect_with_timeout failed\n");
+#endif
          return -1;
+      }
       /* socket_connect_with_timeout makes the socket non-blocking. */
       if (!socket_set_block(state->net_ctx.fd, true))
+      {
+#ifdef VITA
+         fprintf(stderr, "[SSL] socket_set_block failed\n");
+#endif
          return -1;
+      }
    }
    else
    {
       if (socket_connect(state->net_ctx.fd, data))
+      {
+#ifdef VITA
+         fprintf(stderr, "[SSL] socket_connect failed\n");
+#endif
          return -1;
+      }
    }
 
-   if (mbedtls_ssl_config_defaults(&state->conf,
+#ifdef VITA
+   fprintf(stderr, "[SSL] Socket connected, configuring SSL\n");
+#endif
+
+   ret = mbedtls_ssl_config_defaults(&state->conf,
                MBEDTLS_SSL_IS_CLIENT,
                MBEDTLS_SSL_TRANSPORT_STREAM,
-               MBEDTLS_SSL_PRESET_DEFAULT) != 0)
+               MBEDTLS_SSL_PRESET_DEFAULT);
+   if (ret != 0)
+   {
+#ifdef VITA
+      fprintf(stderr, "[SSL] mbedtls_ssl_config_defaults failed: -0x%04x\n", -ret);
+#endif
       return -1;
+   }
 
    mbedtls_ssl_conf_authmode(&state->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
    mbedtls_ssl_conf_ca_chain(&state->conf, &state->ca, NULL);
    mbedtls_ssl_conf_rng(&state->conf, mbedtls_ctr_drbg_random, &state->ctr_drbg);
    mbedtls_ssl_conf_dbg(&state->conf, ssl_debug, stderr);
 
-   if (mbedtls_ssl_setup(&state->ctx, &state->conf) != 0)
+   ret = mbedtls_ssl_setup(&state->ctx, &state->conf);
+   if (ret != 0)
+   {
+#ifdef VITA
+      fprintf(stderr, "[SSL] mbedtls_ssl_setup failed: -0x%04x\n", -ret);
+#endif
       return -1;
+   }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-   if (mbedtls_ssl_set_hostname(&state->ctx, state->domain) != 0)
+   ret = mbedtls_ssl_set_hostname(&state->ctx, state->domain);
+   if (ret != 0)
+   {
+#ifdef VITA
+      fprintf(stderr, "[SSL] mbedtls_ssl_set_hostname failed: -0x%04x\n", -ret);
+#endif
       return -1;
+   }
 #endif
 
    mbedtls_ssl_set_bio(&state->ctx, &state->net_ctx, mbedtls_net_send, mbedtls_net_recv, NULL);
 
+#ifdef VITA
+   fprintf(stderr, "[SSL] Starting SSL handshake with %s\n", state->domain ? state->domain : "(null)");
+#endif
+
    while ((ret = mbedtls_ssl_handshake(&state->ctx)) != 0)
    {
       if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE)
+      {
+#ifdef VITA
+         fprintf(stderr, "[SSL] mbedtls_ssl_handshake failed: -0x%04x\n", -ret);
+#endif
          return -1;
+      }
    }
+
+#ifdef VITA
+   fprintf(stderr, "[SSL] SSL handshake completed successfully\n");
+#endif
 
    if ((flags = mbedtls_ssl_get_verify_result(&state->ctx)) != 0)
    {
       char vrfy_buf[512];
       mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", flags);
+#ifdef VITA
+      fprintf(stderr, "[SSL] Certificate verification: %s\n", vrfy_buf);
+#endif
    }
 
    return state->net_ctx.fd;
