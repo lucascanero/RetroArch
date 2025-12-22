@@ -516,7 +516,14 @@ static bool webdav_sync_begin(cloud_sync_complete_handler_t cb, void *user_data)
 
 #ifndef HAVE_SSL
    if (strncmp(url, "https", 5) == 0)
+   {
+      const char *_msg = "Cloud Sync: HTTPS not supported - SSL disabled in this build";
+      RARCH_ERR("[webdav] HTTPS URL specified but SSL support is not enabled in this build.\n");
+      RARCH_ERR("[webdav] Please use an HTTP URL or rebuild with SSL support (--enable-ssl).\n");
+      runloop_msg_queue_push(_msg, strlen(_msg),
+            1, 180, true, NULL, MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_ERROR);
       return false;
+   }
 #endif
    /* TODO/FIXME: LOCK? */
    if (!strstr(url, "://"))
