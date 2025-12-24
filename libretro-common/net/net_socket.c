@@ -32,6 +32,11 @@
 
 #include <net/net_socket.h>
 
+#ifdef VITA
+/* Global to store last connect error for debugging */
+int g_vita_last_connect_error = 0;
+#endif
+
 int socket_init(void **address, uint16_t port, const char *server,
       enum socket_type type, int family)
 {
@@ -713,6 +718,34 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
    int res;
    struct addrinfo *addr = (struct addrinfo*)data;
 
+#ifdef VITA
+   /* VITA: Use simple blocking connect with timeout via setsockopt.
+    * VITA's epoll-based poll doesn't work correctly for non-blocking connect,
+    * so we use blocking connect with socket timeouts instead.
+    * Note: sceNetConnect returns negative error codes directly on failure. */
+   {
+      int snd_timeout = (timeout > 0 ? timeout : 5000) * 1000; /* microseconds */
+      int rcv_timeout = snd_timeout;
+      
+      /* Ensure socket is in blocking mode */
+      socket_set_block(fd, true);
+      
+      /* Set send/receive timeouts - VITA uses microseconds */
+      setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &snd_timeout, sizeof(snd_timeout));
+      setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_timeout, sizeof(rcv_timeout));
+      
+      res = connect(fd, addr->ai_addr, addr->ai_addrlen);
+      
+      /* Store error code in a global for debugging - VITA returns error code directly */
+      extern int g_vita_last_connect_error;
+      g_vita_last_connect_error = res;
+      
+      if (res < 0)
+         return false;
+      
+      return true;
+   }
+#else
    if (!socket_nonblock(fd))
       return false;
 
@@ -735,27 +768,6 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
    }
 #endif
 
-#ifdef VITA
-   /* VITA: Use simple blocking connect with timeout via setsockopt.
-    * VITA's epoll-based poll may not work correctly for non-blocking connect. */
-   {
-      int snd_timeout = (timeout > 0 ? timeout : 5000) * 1000; /* microseconds */
-      int rcv_timeout = snd_timeout;
-      
-      /* Set back to blocking */
-      socket_set_block(fd, true);
-      
-      /* Set send/receive timeouts */
-      setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &snd_timeout, sizeof(snd_timeout));
-      setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_timeout, sizeof(rcv_timeout));
-      
-      res = connect(fd, addr->ai_addr, addr->ai_addrlen);
-      if (res < 0)
-         return false;
-      
-      return true;
-   }
-#else
    res = connect(fd, addr->ai_addr, addr->ai_addrlen);
    if (res)
    {

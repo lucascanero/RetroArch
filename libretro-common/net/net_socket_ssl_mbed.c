@@ -252,13 +252,19 @@ int ssl_socket_connect(void *state_data,
    {
       if (!socket_connect_with_timeout(state->net_ctx.fd, data, 5000))
       {
-         ssl_set_error(-1, "socket_connect_with_timeout failed");
 #ifdef VITA
-         fprintf(stderr, "[SSL] socket_connect_with_timeout failed\n");
+         extern int g_vita_last_connect_error;
+         char err_buf[128];
+         snprintf(err_buf, sizeof(err_buf), "socket_connect_with_timeout failed (VITA err: 0x%08X)", 
+                  (unsigned int)g_vita_last_connect_error);
+         ssl_set_error(g_vita_last_connect_error, err_buf);
+         fprintf(stderr, "[SSL] %s\n", err_buf);
+#else
+         ssl_set_error(-1, "socket_connect_with_timeout failed");
 #endif
          return -1;
       }
-      /* socket_connect_with_timeout makes the socket non-blocking. */
+      /* socket_connect_with_timeout makes the socket non-blocking (except VITA). */
       if (!socket_set_block(state->net_ctx.fd, true))
       {
          ssl_set_error(-2, "socket_set_block failed");
