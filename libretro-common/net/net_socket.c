@@ -735,6 +735,27 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
    }
 #endif
 
+#ifdef VITA
+   /* VITA: Use simple blocking connect with timeout via setsockopt.
+    * VITA's epoll-based poll may not work correctly for non-blocking connect. */
+   {
+      int snd_timeout = (timeout > 0 ? timeout : 5000) * 1000; /* microseconds */
+      int rcv_timeout = snd_timeout;
+      
+      /* Set back to blocking */
+      socket_set_block(fd, true);
+      
+      /* Set send/receive timeouts */
+      setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &snd_timeout, sizeof(snd_timeout));
+      setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &rcv_timeout, sizeof(rcv_timeout));
+      
+      res = connect(fd, addr->ai_addr, addr->ai_addrlen);
+      if (res < 0)
+         return false;
+      
+      return true;
+   }
+#else
    res = connect(fd, addr->ai_addr, addr->ai_addrlen);
    if (res)
    {
@@ -749,6 +770,7 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
       if (!socket_wait(fd, NULL, &ready, timeout) || !ready)
          return false;
    }
+#endif
 
 #if defined(GEKKO)
    /* libogc does not have getsockopt implemented */
@@ -759,19 +781,14 @@ bool socket_connect_with_timeout(int fd, void *data, int timeout)
    /* libctru getsockopt does not return expected value */
    if ((connect(fd, addr->ai_addr, addr->ai_addrlen) < 0) && errno != EISCONN)
       return false;
-#elif defined(VITA)
-   /* VITA's sceNetGetsockopt may not work as expected for non-blocking connect.
-    * Try to connect again - if already connected it returns SCE_NET_ERROR_EISCONN (0x80410074) */
-   res = connect(fd, addr->ai_addr, addr->ai_addrlen);
-   if (res < 0 && res != (int)0x80410074) /* SCE_NET_ERROR_EISCONN */
-      return false;
 #elif defined(WIIU)
    /* On WiiU, getsockopt() returns -1 and sets lastsocketerr() (Wii's
     * equivalent to errno) to 16. */
    if ((connect(fd, addr->ai_addr, addr->ai_addrlen) == -1)
          && socketlasterr() != SO_EISCONN)
       return false;
-#else
+#elif !defined(VITA)
+   /* VITA has its own connect flow above, skip this */
    {
       int       err = -1;
       socklen_t errsz = sizeof(err);
