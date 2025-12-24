@@ -17,6 +17,9 @@
 #include <net/net_http.h>
 #include <string/stdstring.h>
 #include <time/rtime.h>
+#ifdef HAVE_SSL
+#include <net/net_socket_ssl.h>
+#endif
 
 #include "../cloud_sync_driver.h"
 #include "../../retroarch.h"
@@ -492,7 +495,33 @@ static void webdav_stat_cb(retro_task_t *task, void *task_data, void *user_data,
          RARCH_ERR("[webdav] Error: %s\n", err);
       /* Check if this is an HTTPS URL - SSL issues would cause this */
       if (strncmp(webdav_st->url, "https", 5) == 0)
+      {
          RARCH_ERR("[webdav] HTTPS connection failed - possible SSL/TLS issue\n");
+#ifdef HAVE_SSL
+         {
+            int ssl_err_code = 0;
+            const char *ssl_err = ssl_socket_get_last_error(&ssl_err_code);
+            if (ssl_err)
+               RARCH_ERR("[webdav] SSL error (code: -0x%04x): %s\n", -ssl_err_code, ssl_err);
+         }
+#endif
+      }
+   }
+   else if (data->status == -1)
+   {
+      /* HTTP -1 means connection failed before HTTP response */
+      RARCH_ERR("[webdav] Connection failed (HTTP -1). Network or SSL issue.\n");
+      if (strncmp(webdav_st->url, "https", 5) == 0)
+      {
+#ifdef HAVE_SSL
+         int ssl_err_code = 0;
+         const char *ssl_err = ssl_socket_get_last_error(&ssl_err_code);
+         if (ssl_err)
+            RARCH_ERR("[webdav] SSL error (code: -0x%04x): %s\n", -ssl_err_code, ssl_err);
+         else
+            RARCH_ERR("[webdav] SSL connection failed but no specific error recorded.\n");
+#endif
+      }
    }
 
    if (webdav_needs_reauth(data))

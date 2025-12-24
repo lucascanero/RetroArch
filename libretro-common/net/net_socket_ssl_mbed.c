@@ -70,6 +70,34 @@
 #define DEBUG_LEVEL 0
 #endif
 
+/* Global SSL error tracking for debugging */
+static int ssl_last_error_code = 0;
+static char ssl_last_error_msg[256] = {0};
+
+const char* ssl_socket_get_last_error(int *error_code)
+{
+   if (error_code)
+      *error_code = ssl_last_error_code;
+   if (ssl_last_error_code == 0)
+      return NULL;
+   return ssl_last_error_msg;
+}
+
+static void ssl_set_error(int code, const char *msg)
+{
+   ssl_last_error_code = code;
+   if (msg)
+      snprintf(ssl_last_error_msg, sizeof(ssl_last_error_msg), "%s", msg);
+   else
+      ssl_last_error_msg[0] = '\0';
+}
+
+static void ssl_clear_error(void)
+{
+   ssl_last_error_code = 0;
+   ssl_last_error_msg[0] = '\0';
+}
+
 struct ssl_state
 {
    mbedtls_net_context net_ctx;
@@ -145,6 +173,7 @@ void* ssl_socket_init(int fd, const char *domain)
    static const char *pers = "libretro";
    struct ssl_state *state = (struct ssl_state*)calloc(1, sizeof(*state));
 
+   ssl_clear_error();
    state->domain           = domain;
 
 #if defined(MBEDTLS_DEBUG_C)
@@ -177,6 +206,7 @@ void* ssl_socket_init(int fd, const char *domain)
       &state->entropy, (const unsigned char*)pers, strlen(pers));
    if (ret != 0)
    {
+      ssl_set_error(ret, "mbedtls_ctr_drbg_seed failed (entropy init)");
 #ifdef VITA
       fprintf(stderr, "[SSL] mbedtls_ctr_drbg_seed failed: -0x%04x\n", -ret);
 #endif
@@ -187,6 +217,7 @@ void* ssl_socket_init(int fd, const char *domain)
    ret = mbedtls_x509_crt_parse(&state->ca, (const unsigned char*)cacert_pem, sizeof(cacert_pem) / sizeof(cacert_pem[0]));
    if (ret < 0)
    {
+      ssl_set_error(ret, "mbedtls_x509_crt_parse failed (CA cert load)");
 #ifdef VITA
       fprintf(stderr, "[SSL] mbedtls_x509_crt_parse failed: -0x%04x\n", -ret);
 #endif
@@ -211,6 +242,8 @@ int ssl_socket_connect(void *state_data,
    int ret, flags;
    struct ssl_state *state = (struct ssl_state*)state_data;
 
+   ssl_clear_error();
+
 #ifdef VITA
    fprintf(stderr, "[SSL] ssl_socket_connect: starting connection\n");
 #endif
@@ -219,6 +252,7 @@ int ssl_socket_connect(void *state_data,
    {
       if (!socket_connect_with_timeout(state->net_ctx.fd, data, 5000))
       {
+         ssl_set_error(-1, "socket_connect_with_timeout failed");
 #ifdef VITA
          fprintf(stderr, "[SSL] socket_connect_with_timeout failed\n");
 #endif
@@ -227,6 +261,7 @@ int ssl_socket_connect(void *state_data,
       /* socket_connect_with_timeout makes the socket non-blocking. */
       if (!socket_set_block(state->net_ctx.fd, true))
       {
+         ssl_set_error(-2, "socket_set_block failed");
 #ifdef VITA
          fprintf(stderr, "[SSL] socket_set_block failed\n");
 #endif
@@ -237,6 +272,7 @@ int ssl_socket_connect(void *state_data,
    {
       if (socket_connect(state->net_ctx.fd, data))
       {
+         ssl_set_error(-3, "socket_connect failed");
 #ifdef VITA
          fprintf(stderr, "[SSL] socket_connect failed\n");
 #endif
@@ -254,6 +290,7 @@ int ssl_socket_connect(void *state_data,
                MBEDTLS_SSL_PRESET_DEFAULT);
    if (ret != 0)
    {
+      ssl_set_error(ret, "mbedtls_ssl_config_defaults failed");
 #ifdef VITA
       fprintf(stderr, "[SSL] mbedtls_ssl_config_defaults failed: -0x%04x\n", -ret);
 #endif
@@ -268,6 +305,7 @@ int ssl_socket_connect(void *state_data,
    ret = mbedtls_ssl_setup(&state->ctx, &state->conf);
    if (ret != 0)
    {
+      ssl_set_error(ret, "mbedtls_ssl_setup failed");
 #ifdef VITA
       fprintf(stderr, "[SSL] mbedtls_ssl_setup failed: -0x%04x\n", -ret);
 #endif
@@ -278,6 +316,7 @@ int ssl_socket_connect(void *state_data,
    ret = mbedtls_ssl_set_hostname(&state->ctx, state->domain);
    if (ret != 0)
    {
+      ssl_set_error(ret, "mbedtls_ssl_set_hostname failed");
 #ifdef VITA
       fprintf(stderr, "[SSL] mbedtls_ssl_set_hostname failed: -0x%04x\n", -ret);
 #endif
@@ -295,6 +334,7 @@ int ssl_socket_connect(void *state_data,
    {
       if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE)
       {
+         ssl_set_error(ret, "mbedtls_ssl_handshake failed");
 #ifdef VITA
          fprintf(stderr, "[SSL] mbedtls_ssl_handshake failed: -0x%04x\n", -ret);
 #endif
