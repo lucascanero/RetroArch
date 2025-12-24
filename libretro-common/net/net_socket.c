@@ -874,6 +874,9 @@ void socket_set_target(void *data, socket_target_t *in_addr)
 #ifdef GEKKO
    out_target->sin_len          = 8;
 #endif
+#ifdef VITA
+   out_target->sin_len          = sizeof(struct sockaddr_in);
+#endif
    switch (in_addr->domain)
    {
       case SOCKET_DOMAIN_INET:
