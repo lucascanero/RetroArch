@@ -1401,6 +1401,26 @@ MSG_HASH(
    "Your password for your cloud storage account."
    )
 MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT,
+   "On Conflict"
+   )
+MSG_HASH(
+   MENU_ENUM_SUBLABEL_CLOUD_SYNC_ON_CONFLICT,
+   "Action when local and server files both changed. Ignore: skip file. Prefer Local: upload local. Prefer Server: download server."
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_IGNORE,
+   "Ignore"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_LOCAL_WINS,
+   "Prefer Local"
+   )
+MSG_HASH(
+   MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_SERVER_WINS,
+   "Prefer Server"
+   )
+MSG_HASH(
    MENU_ENUM_LABEL_VALUE_LOGGING_SETTINGS,
    "Logging"
    )

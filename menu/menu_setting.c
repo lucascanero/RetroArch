@@ -5365,6 +5365,33 @@ static size_t setting_get_string_representation_uint_cloud_sync_sync_mode(
    }
    return 0;
 }
+
+static size_t setting_get_string_representation_uint_cloud_sync_on_conflict(
+      rarch_setting_t *setting, char *s, size_t len)
+{
+   if (setting)
+   {
+      switch (*setting->value.target.unsigned_integer)
+      {
+         case CLOUD_SYNC_ON_CONFLICT_IGNORE:
+            return strlcpy(s,
+                  msg_hash_to_str(
+                     MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_IGNORE),
+                  len);
+         case CLOUD_SYNC_ON_CONFLICT_LOCAL_WINS:
+            return strlcpy(s,
+                  msg_hash_to_str(
+                     MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_LOCAL_WINS),
+                  len);
+         case CLOUD_SYNC_ON_CONFLICT_SERVER_WINS:
+            return strlcpy(s,
+                  msg_hash_to_str(
+                     MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT_SERVER_WINS),
+                  len);
+      }
+   }
+   return 0;
+}
 #endif
 
 #if defined(HAVE_OVERLAY)
@@ -11844,6 +11871,23 @@ static bool setting_append_list(
          (*list)[list_info->index - 1].get_string_representation =
             &setting_get_string_representation_uint_cloud_sync_sync_mode;
          menu_settings_list_current_add_range(list, list_info, 0, CLOUD_SYNC_MODE_LAST-1, 1, true, true);
+
+         CONFIG_UINT(
+               list, list_info,
+               &settings->uints.cloud_sync_on_conflict,
+               MENU_ENUM_LABEL_CLOUD_SYNC_ON_CONFLICT,
+               MENU_ENUM_LABEL_VALUE_CLOUD_SYNC_ON_CONFLICT,
+               CLOUD_SYNC_ON_CONFLICT_IGNORE,
+               &group_info,
+               &subgroup_info,
+               parent_group,
+               general_write_handler,
+               general_read_handler);
+         (*list)[list_info->index - 1].ui_type   = ST_UI_TYPE_UINT_COMBOBOX;
+         (*list)[list_info->index - 1].action_ok = &setting_action_ok_uint;
+         (*list)[list_info->index - 1].get_string_representation =
+            &setting_get_string_representation_uint_cloud_sync_on_conflict;
+         menu_settings_list_current_add_range(list, list_info, 0, CLOUD_SYNC_ON_CONFLICT_LAST-1, 1, true, true);
 
          CONFIG_STRING_OPTIONS(
                list, list_info,
