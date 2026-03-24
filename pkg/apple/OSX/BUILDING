@@ -1,0 +1,98 @@
+The following instructions apply to building the macOS Metal build of RetroArch,
+which is the recommended build for testing on a modern Mac (macOS 10.13 or later).
+
+Prerequisites:
+    - macOS 10.13 (High Sierra) or later
+    - Xcode (latest version recommended; install from the Mac App Store)
+    - Xcode Command Line Tools: run 'xcode-select --install'
+    - Git
+
+All commands below should be run from the root of the RetroArch source tree.
+
+Quick start — Xcode IDE:
+    1. Open the workspace in Xcode:
+           open pkg/apple/RetroArch.xcworkspace
+    2. In the scheme selector at the top of the Xcode window, choose the
+       "RetroArch" scheme and target "My Mac".
+    3. Choose Product -> Build (or press Cmd+B) to build, or
+       Product -> Run (Cmd+R) to build and launch immediately.
+    4. The built app can be found in Xcode's derived data directory:
+           ~/Library/Developer/Xcode/DerivedData/RetroArch*/Build/Products/Debug/RetroArch.app
+
+Quick start — command line (no code signing required):
+    Run the following command from the repository root:
+
+        xcodebuild \
+            -workspace pkg/apple/RetroArch.xcworkspace \
+            -scheme RetroArch \
+            -config Release \
+            -xcconfig pkg/apple/GitHubCI.xcconfig \
+            -derivedDataPath build
+
+    The resulting app will be at:
+        build/Build/Products/Release/RetroArch.app
+
+    To run it immediately after building:
+        open build/Build/Products/Release/RetroArch.app
+
+Build configurations:
+    The Xcode project provides several build targets:
+
+    RetroArch         — Standard Metal build for local development and testing.
+                        Uses RetroArch.entitlements (allows JIT, dylib loading, etc.)
+                        and Metal.xcconfig for graphics settings.
+
+    RetroArch AppStore — App Store distribution build.
+                        Uses AppStore.xcconfig which enables iCloud, iCloud Drive
+                        and App Store-specific features. Requires valid Apple
+                        Developer credentials and provisioning profiles.
+
+    RetroArchSteam    — Steam-specific build (requires the Mist Steam library).
+
+    RetroArchQt       — Qt-based UI variant (requires Qt framework).
+
+    For local testing, always use the "RetroArch" target.
+
+Code signing:
+    The GitHubCI.xcconfig configuration (used in the command-line example above)
+    disables code signing so no Apple Developer account is required.
+
+    If building via the Xcode IDE, Xcode will automatically sign the app with
+    your local development certificate. If you see code signing errors, go to
+    the project settings (Signing & Capabilities tab) and set your team.
+
+    The app uses RetroArch.entitlements, which grants the following permissions
+    needed for emulation:
+        - JIT compilation (allow-jit, allow-unsigned-executable-memory,
+          disable-executable-page-protection)
+        - Loading unsigned cores (disable-library-validation,
+          allow-dyld-environment-variables)
+        - Audio/camera input
+
+    Note: On Apple Silicon Macs, JIT requires the process to be debugged or
+    for the app to have the com.apple.security.cs.allow-jit entitlement, which
+    RetroArch.entitlements already provides.
+
+Libretro cores:
+    RetroArch needs at least one libretro core to run content. Prebuilt cores
+    can be downloaded inside the app via Main Menu -> Online Updater -> Core
+    Downloader, or obtained from https://buildbot.libretro.com/nightly/apple/osx/
+
+    To build a core from source, refer to the individual core's documentation.
+    Cores are .dylib files and should be placed in:
+        ~/Library/Application Support/RetroArch/cores/
+    or configured via Settings -> Directory -> Cores in the RetroArch UI.
+
+Troubleshooting:
+    - "No signing certificate found": Set your development team in Xcode's
+      project settings, or use GitHubCI.xcconfig to skip signing entirely.
+
+    - Build fails with "xcpretty: command not found": The xcpretty formatter
+      is optional. Remove '| xcpretty --color' from the xcodebuild command.
+
+    - App crashes on launch on older macOS: The minimum deployment target is
+      macOS 10.13. Ensure your system meets this requirement.
+
+    - Cores fail to load ("The code signature is invalid"): Make sure the app
+      is signed with the entitlements file that includes
+      com.apple.security.cs.disable-library-validation.
