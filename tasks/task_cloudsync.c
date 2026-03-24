@@ -678,6 +678,23 @@ static void task_cloud_sync_fetch_server_file(task_cloud_sync_state_t *sync_stat
    }
 }
 
+static void task_cloud_sync_resolve_conflict(task_cloud_sync_state_t *sync_state)
+{
+   /*
+    * rather than pop up some UI let's just resolve it ourselves!
+    * three options:
+    * 1. rename the server file and replace it
+    * 2. rename the local file and replace it
+    * 3. ignore it
+    * If we ignore it then we need to keep it out of the new local manifest
+    */
+   struct item_file *server_file = &sync_state->server_manifest->list[sync_state->server_idx];
+   RARCH_WARN(CSPFX "Conflicting change of %s.\n", CS_FILE_KEY(server_file));
+   task_cloud_sync_add_to_updated_manifest(sync_state, CS_FILE_KEY(server_file), CS_FILE_HASH(server_file), true);
+   /* no need to mark need_manifest_uploaded, nothing changed */
+   sync_state->conflicts = true;
+}
+
 static void task_cloud_sync_upload_cb(void *user_data, const char *path, bool success, RFILE *file)
 {
    task_cloud_sync_state_t *sync_state = (task_cloud_sync_state_t *)user_data;
@@ -779,35 +796,6 @@ static void task_cloud_sync_delete_current_file(task_cloud_sync_state_t *sync_st
       filestream_delete(item->path);
    else
       task_cloud_sync_backup_file(item);
-}
-
-static void task_cloud_sync_resolve_conflict(task_cloud_sync_state_t *sync_state)
-{
-   struct item_file *server_file     = &sync_state->server_manifest->list[sync_state->server_idx];
-   unsigned         on_conflict      = config_get_ptr()->uints.cloud_sync_on_conflict;
-
-   RARCH_WARN(CSPFX "Conflicting change of %s.\n", CS_FILE_KEY(server_file));
-
-   switch (on_conflict)
-   {
-      case CLOUD_SYNC_ON_CONFLICT_LOCAL_WINS:
-         /* Upload the local file to the server, overwriting the server copy. */
-         task_cloud_sync_upload_current_file(sync_state);
-         break;
-      case CLOUD_SYNC_ON_CONFLICT_SERVER_WINS:
-         /* Download the server file, overwriting the local copy. */
-         task_cloud_sync_fetch_server_file(sync_state);
-         break;
-      case CLOUD_SYNC_ON_CONFLICT_IGNORE:
-      default:
-         /* Keep the server hash in the manifest so the conflict is
-          * re-evaluated on the next sync. */
-         task_cloud_sync_add_to_updated_manifest(sync_state,
-               CS_FILE_KEY(server_file), CS_FILE_HASH(server_file), true);
-         /* no need to mark need_manifest_uploaded, nothing changed */
-         sync_state->conflicts = true;
-         break;
-   }
 }
 
 static void task_cloud_sync_check_server_current(task_cloud_sync_state_t *sync_state, bool include_local)
