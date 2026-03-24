@@ -2614,6 +2614,7 @@ static struct config_uint_setting *populate_settings_uint(
 #endif
 #ifdef HAVE_CLOUDSYNC
    SETTING_UINT("cloud_sync_sync_mode",          &settings->uints.cloud_sync_sync_mode, true, CLOUD_SYNC_MODE_AUTOMATIC, false);
+   SETTING_UINT("cloud_sync_on_conflict",        &settings->uints.cloud_sync_on_conflict, true, CLOUD_SYNC_ON_CONFLICT_IGNORE, false);
 #endif
 
 #ifdef HAVE_LANGEXTRA

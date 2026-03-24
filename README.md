@@ -212,6 +212,27 @@ To configure joypads, use the built-in menu or manually configure them in `retro
 
 Instructions for compiling and installing RetroArch can be found in the [Libretro/RetroArch Documentation Center](https://docs.libretro.com/).
 
+### Building the macOS Metal build
+
+The Metal build is the recommended build for testing on a modern Mac (macOS 10.13+).
+Detailed instructions are in [`pkg/apple/OSX/BUILDING`](pkg/apple/OSX/BUILDING).
+
+**Quick start (no Apple Developer account required):**
+
+```sh
+xcodebuild \
+    -workspace pkg/apple/RetroArch.xcworkspace \
+    -scheme RetroArch \
+    -config Release \
+    -xcconfig pkg/apple/GitHubCI.xcconfig \
+    -derivedDataPath build
+```
+
+The resulting app will be at `build/Build/Products/Release/RetroArch.app`.
+
+Alternatively, open `pkg/apple/RetroArch.xcworkspace` in Xcode, select the
+**RetroArch** scheme targeting **My Mac**, and press **Cmd+R** to build and run.
+
 ## CRT 15Khz Resolution Switching
 
 CRT SwitchRes will turn on, on the fly. However, you will need to restart RetroArch to disable it. With CRT SwitchRes enable RetroArch will start in 2560 x 480 @ 60.
