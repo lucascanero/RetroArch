@@ -2328,6 +2328,10 @@ ifeq ($(HAVE_NETWORKING), 1)
       HAVE_CLOUDSYNC = 1
    endif
 
+   ifneq ($(findstring Darwin,$(OS)),)
+      HAVE_CLOUDSYNC = 1
+   endif
+
    ifeq ($(HAVE_CLOUDSYNC), 1)
       DEFINES += -DHAVE_CLOUDSYNC
       OBJ += tasks/task_cloudsync.o \
