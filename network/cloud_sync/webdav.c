@@ -17,6 +17,9 @@
 #include <net/net_http.h>
 #include <string/stdstring.h>
 #include <time/rtime.h>
+#ifdef HAVE_SSL
+#include <net/net_socket_ssl.h>
+#endif
 
 #include "../cloud_sync_driver.h"
 #include "../../retroarch.h"
@@ -486,7 +489,40 @@ static void webdav_stat_cb(retro_task_t *task, void *task_data, void *user_data,
       return;
 
    if (!data)
-      RARCH_WARN("[webdav] Did not get data for stat, is the server down?\n");
+   {
+      RARCH_ERR("[webdav] Did not get data for stat, connection failed. Check URL and network.\n");
+      if (err)
+         RARCH_ERR("[webdav] Error: %s\n", err);
+      /* Check if this is an HTTPS URL - SSL issues would cause this */
+      if (strncmp(webdav_st->url, "https", 5) == 0)
+      {
+         RARCH_ERR("[webdav] HTTPS connection failed - possible SSL/TLS issue\n");
+#ifdef HAVE_SSL
+         {
+            int ssl_err_code = 0;
+            const char *ssl_err = ssl_socket_get_last_error(&ssl_err_code);
+            if (ssl_err)
+               RARCH_ERR("[webdav] SSL error (code: -0x%04x): %s\n", -ssl_err_code, ssl_err);
+         }
+#endif
+      }
+   }
+   else if (data->status == -1)
+   {
+      /* HTTP -1 means connection failed before HTTP response */
+      RARCH_ERR("[webdav] Connection failed (HTTP -1). Network or SSL issue.\n");
+      if (strncmp(webdav_st->url, "https", 5) == 0)
+      {
+#ifdef HAVE_SSL
+         int ssl_err_code = 0;
+         const char *ssl_err = ssl_socket_get_last_error(&ssl_err_code);
+         if (ssl_err)
+            RARCH_ERR("[webdav] SSL error (code: -0x%04x): %s\n", -ssl_err_code, ssl_err);
+         else
+            RARCH_ERR("[webdav] SSL connection failed but no specific error recorded.\n");
+#endif
+      }
+   }
 
    if (webdav_needs_reauth(data))
    {
@@ -498,6 +534,9 @@ static void webdav_stat_cb(retro_task_t *task, void *task_data, void *user_data,
 
    if (!success && data)
        webdav_log_http_failure(webdav_st->url, data);
+
+   if (success)
+      RARCH_LOG("[webdav] Connection to server successful\n");
 
    webdav_cb_st->cb(webdav_cb_st->user_data, NULL, success, NULL);
    free(webdav_cb_st);
@@ -516,13 +555,21 @@ static bool webdav_sync_begin(cloud_sync_complete_handler_t cb, void *user_data)
 
 #ifndef HAVE_SSL
    if (strncmp(url, "https", 5) == 0)
+   {
+      RARCH_ERR("[webdav] HTTPS URL provided but SSL support not available\n");
       return false;
+   }
+#else
+   if (strncmp(url, "https", 5) == 0)
+      RARCH_LOG("[webdav] Using HTTPS (SSL enabled)\n");
 #endif
    /* TODO/FIXME: LOCK? */
    if (!strstr(url, "://"))
        _len += strlcpy(webdav_st->url, "http://", STRLEN_CONST("http://"));
    strlcpy(webdav_st->url + _len, url, sizeof(webdav_st->url) - _len);
    fill_pathname_slash(webdav_st->url, sizeof(webdav_st->url));
+
+   RARCH_LOG("[webdav] Sync begin with URL: %s\n", webdav_st->url);
 
    /* URL/username/password may have changed, redo auth check */
    webdav_st->basic = true;

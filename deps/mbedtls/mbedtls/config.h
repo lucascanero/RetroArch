@@ -36,6 +36,11 @@
 #endif
 #endif
 
+#ifdef VITA
+#define unix
+#define MBEDTLS_NO_IPV6
+#endif
+
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE 1
 #endif
@@ -1603,7 +1608,7 @@
  *
  * This module is used by the HAVEGE random number generator.
  */
-#ifndef _3DS
+#if !defined(_3DS) && !defined(VITA)
 #define MBEDTLS_TIMING_C
 #endif
 

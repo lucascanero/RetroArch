@@ -283,7 +283,7 @@ int getaddrinfo_retro(const char *node, const char *service,
 #ifdef HAVE_SOCKET_LEGACY
    {
       struct addrinfo    *info = (struct addrinfo*)calloc(1, sizeof(*info));
-      struct sockaddr_in *addr = (struct sockaddr_in*)malloc(sizeof(*addr));
+      struct sockaddr_in *addr = (struct sockaddr_in*)calloc(1, sizeof(*addr));
 
       if (!info || !addr)
          goto failure;
@@ -295,6 +295,10 @@ int getaddrinfo_retro(const char *node, const char *service,
       info->ai_addr     = (struct sockaddr*)addr;
       /* We ignore AI_CANONNAME; ai_canonname is always NULL. */
 
+#ifdef VITA
+      /* VITA's SceNetSockaddrIn has sin_len as first byte, must be set */
+      addr->sin_len    = sizeof(*addr);
+#endif
       addr->sin_family = AF_INET;
 
       if (service)

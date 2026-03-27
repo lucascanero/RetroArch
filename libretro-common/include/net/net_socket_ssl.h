@@ -45,6 +45,13 @@ void ssl_socket_close(void *state_data);
 
 void ssl_socket_free(void *state_data);
 
+/**
+ * Get the last SSL error code and description
+ * @param error_code Pointer to store the error code (can be NULL)
+ * @return String describing the last error, or NULL if no error
+ */
+const char* ssl_socket_get_last_error(int *error_code);
+
 RETRO_END_DECLS
 
 #endif
