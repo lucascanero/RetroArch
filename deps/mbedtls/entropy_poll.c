@@ -35,11 +35,14 @@
 #include "mbedtls/timing.h"
 #endif
 
+#if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
 #if !defined(unix) && !defined(__unix__) && !defined(__unix) && \
     !defined(__APPLE__) && !defined(_WIN32) && !defined(__HAIKU__)
 #error "Platform entropy sources only work on Unix and Windows, see MBEDTLS_NO_PLATFORM_ENTROPY in config.h"
 #endif
+#endif
 
+#if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 
 #if !defined(_WIN32_WINNT)
@@ -180,6 +183,7 @@ int mbedtls_platform_entropy_poll( void *data,
     return( 0 );
 }
 #endif /* _WIN32 && !EFIX64 && !EFI32 */
+#endif /* !MBEDTLS_NO_PLATFORM_ENTROPY */
 
 #if defined(MBEDTLS_TIMING_C)
 int mbedtls_hardclock_poll( void *data,
