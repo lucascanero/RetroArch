@@ -56,8 +56,6 @@
 
 #if !defined (__PSL1GHT__) && defined(__PS3__) || defined(WIIU)
 #define close(fd)               socketclose(fd)
-#elif defined(VITA)
-#define close(fd)               sceNetSocketClose(fd)
 #elif defined(_MSC_VER)
 #if defined(_WIN32_WCE)
 #pragma comment( lib, "ws2.lib" )
@@ -84,6 +82,13 @@ static int wsa_init_done = 0;
 #include <fcntl.h>
 #include <netdb.h>
 #include <errno.h>
+
+#if defined(VITA)
+#include <psp2/net/net.h>
+#include <psp2/net/netctl.h>
+#define SO_NBIO SCE_NET_SO_NBIO
+#define close(fd) sceNetSocketClose(fd)
+#endif
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
@@ -537,8 +542,9 @@ int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
 
    if((sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_ADD, fd + 1, &ev)))
    {
-      int ret = sceNetEpollWait(retro_epoll_fd, &ev, 1, 0);
+      ret = sceNetEpollWait(retro_epoll_fd, &ev, 1, 0);
       sceNetEpollControl(retro_epoll_fd, SCE_NET_EPOLL_CTL_DEL, fd + 1, NULL);
+   }
 #else
     ret = select( fd + 1, &read_fds, NULL, NULL, timeout == 0 ? NULL : &tv );
 #endif
